@@ -1,0 +1,28 @@
+{
+  "name": "promptops",
+  "version": "1.0.0",
+  "description": "Prompt registry with versioning, A/B comparison and regression evals. Keep prompts in git-friendly files, run suites in CI and see regressions before your users do.",
+  "type": "module",
+  "private": true,
+  "license": "MIT",
+  "author": "Arvion Technologies <hello@arviontech.net> (https://arviontech.net)",
+  "homepage": "https://arvion-technology.github.io/labs/demos/promptops/",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/arvion-technology/promptops.git"
+  },
+  "scripts": {
+    "test": "node --test",
+    "demo": "node scripts/serve.mjs . 4173",
+    "shot": "node scripts/shot.mjs 1440 900 docs/screenshot.png",
+    "shot:2": "node scripts/shot.mjs 1440 900 docs/screenshot-2.png #diff",
+    "verify": "node --test test/ && node scripts/serve-check.mjs",
+    "cli": "node bin/promptops.mjs"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "bin": {
+    "promptops": "bin/promptops.mjs"
+  }
+}
