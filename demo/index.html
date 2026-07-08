@@ -1,0 +1,253 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="color-scheme" content="dark" />
+  <title>PromptOps — version, test and compare prompts like code</title>
+  <meta name="description" content="Prompt registry with version history, assertion suites, pass/fail matrices, prompt diffs and a regression gate. Recorded runs, no API key required." />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><rect width='32' height='32' rx='7' fill='%230b0f1a'/><text x='16' y='22' font-family='sans-serif' font-size='16' font-weight='700' fill='%23f5c26b' text-anchor='middle'>A</text></svg>" />
+  <link rel="stylesheet" href="arvion.css" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="aurora"></div>
+  <div class="grid-lines"></div>
+
+  <div class="app shell">
+    <aside class="sidebar">
+      <a class="brand" href="#registry" style="padding:6px 8px 14px">
+        <span class="brand-mark">A</span>
+        <span>
+          <span class="brand-word">PROMPTOPS</span>
+          <span class="brand-sub" style="display:block">by Arvion</span>
+        </span>
+      </a>
+
+      <div class="nav-label">Workspace</div>
+      <a class="nav-item active" href="#registry" data-view="registry"><span class="nav-dot"></span>Registry</a>
+      <a class="nav-item" href="#results" data-view="results"><span class="nav-dot"></span>Suite results</a>
+      <a class="nav-item" href="#diff" data-view="diff"><span class="nav-dot"></span>Prompt diff</a>
+      <a class="nav-item" href="#compare" data-view="compare"><span class="nav-dot"></span>Regression gate</a>
+
+      <div class="nav-label">Reference</div>
+      <a class="nav-item" href="https://github.com/arvion-technology/promptops#readme" target="_blank" rel="noopener"><span class="nav-dot"></span>Documentation ↗</a>
+      <a class="nav-item" href="https://github.com/arvion-technology/promptops/tree/main/src" target="_blank" rel="noopener"><span class="nav-dot"></span>Assertion engine ↗</a>
+
+      <div style="flex:1"></div>
+      <div class="card flat pad-sm" style="margin-top:14px">
+        <div class="row" style="gap:8px">
+          <span class="badge green"><span class="dot pulse"></span>offline</span>
+          <span class="spacer"></span>
+          <span class="small muted mono">v1.0</span>
+        </div>
+        <p class="small muted" style="margin:8px 0 0">3 prompts · 15 cases<br />Recorded runs, live assertions</p>
+      </div>
+    </aside>
+
+    <div style="min-width:0">
+      <header class="topbar">
+        <div class="eyebrow" style="margin:0">Prompt engineering</div>
+        <span class="spacer"></span>
+        <span class="badge gold">versioned prompts</span>
+        <span class="badge blue">assertion suites</span>
+        <span class="badge green"><span class="dot pulse"></span>regression gate</span>
+        <a class="btn sm" href="https://github.com/arvion-technology/promptops" target="_blank" rel="noopener">GitHub ↗</a>
+        <div class="avatar" title="Demo workspace">AV</div>
+      </header>
+
+      <main class="main">
+        <!-- ============================================================ -->
+        <section data-view-panel="registry">
+          <div class="page-head">
+            <div>
+              <div class="eyebrow">Source of truth</div>
+              <h1>Prompt registry</h1>
+              <p class="lede">Prompts live as versioned templates with a changelog, a variable contract and a production label. A template that references an undeclared variable fails to render here, not in production.</p>
+            </div>
+          </div>
+
+          <div class="registry-grid">
+            <div class="card pad-sm">
+              <div class="card-head" style="padding:6px 4px 0">
+                <div class="card-title">Prompts</div>
+                <span class="spacer"></span>
+                <span class="small muted" id="prompt-count">–</span>
+              </div>
+              <div id="prompt-list"></div>
+            </div>
+
+            <div class="col" style="gap:16px">
+              <div class="card">
+                <div class="card-head">
+                  <div>
+                    <div class="card-title" id="prompt-title">–</div>
+                    <div class="card-sub" id="prompt-desc">–</div>
+                  </div>
+                  <span class="spacer"></span>
+                  <span class="badge gold" id="prod-badge">–</span>
+                </div>
+                <div id="version-table"></div>
+              </div>
+
+              <div class="card">
+                <div class="card-head">
+                  <div>
+                    <div class="card-title">Template</div>
+                    <div class="card-sub" id="template-meta">–</div>
+                  </div>
+                  <span class="spacer"></span>
+                  <div class="row" style="gap:6px" id="version-tabs"></div>
+                </div>
+                <pre class="code" id="template"></pre>
+                <div class="row wrap" style="margin-top:12px;gap:6px">
+                  <span class="small muted" style="margin-right:4px">variables</span>
+                  <span id="variables" class="row wrap" style="gap:6px"></span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <section data-view-panel="results" hidden>
+          <div class="page-head">
+            <div>
+              <div class="eyebrow">Suites</div>
+              <h1>Suite results</h1>
+              <p class="lede">Each case runs the same assertions against the recorded outputs of two prompt versions. Assertions are evaluated here, in the browser, from the raw outputs.</p>
+            </div>
+            <span class="spacer"></span>
+            <select class="select" id="suite-select" style="width:240px" aria-label="Suite"></select>
+          </div>
+
+          <div class="stat-grid" id="result-stats" style="margin-bottom:16px"></div>
+
+          <div class="card pad-sm" style="padding:0;margin-bottom:16px">
+            <div class="card-head" style="padding:14px 16px 0">
+              <div>
+                <div class="card-title">Pass/fail matrix</div>
+                <div class="card-sub" id="matrix-sub">–</div>
+              </div>
+              <span class="spacer"></span>
+              <span class="badge" id="matrix-legend">click a row for assertion detail</span>
+            </div>
+            <div id="matrix" style="margin-top:10px"></div>
+          </div>
+
+          <div class="grid grid-2">
+            <div class="card">
+              <div class="card-head"><div class="card-title">Assertion mix</div></div>
+              <div id="assertion-mix"></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><div class="card-title">About this suite</div></div>
+              <div id="suite-note" class="small muted"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <section data-view-panel="diff" hidden>
+          <div class="page-head">
+            <div>
+              <div class="eyebrow">Review</div>
+              <h1>Prompt diff</h1>
+              <p class="lede">A prompt change is a code change. The diff is line-based, the changelog travels with the version, and variables that appear or disappear are called out.</p>
+            </div>
+          </div>
+
+          <div class="card controls">
+            <div class="control">
+              <label for="diff-prompt">Prompt</label>
+              <select class="select" id="diff-prompt"></select>
+            </div>
+            <div class="control">
+              <label for="diff-from">From</label>
+              <select class="select" id="diff-from"></select>
+            </div>
+            <div class="control">
+              <label for="diff-to">To</label>
+              <select class="select" id="diff-to"></select>
+            </div>
+            <div class="control grow" style="align-items:flex-end">
+              <div class="row small muted" id="diff-meta">–</div>
+            </div>
+          </div>
+
+          <div class="grid" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)">
+            <div class="card pad-sm" style="padding:0">
+              <div class="row" style="padding:12px 16px">
+                <span class="card-title" id="diff-title">–</span>
+                <span class="spacer"></span>
+                <span class="badge green" id="added-badge">+0</span>
+                <span class="badge red" id="removed-badge">−0</span>
+              </div>
+              <pre class="diff" id="diff-lines" style="border:0;border-top:1px solid var(--line)"></pre>
+            </div>
+            <div class="col" style="gap:16px">
+              <div class="card">
+                <div class="card-head"><div class="card-title">Version notes</div></div>
+                <div id="diff-notes"></div>
+              </div>
+              <div class="card">
+                <div class="card-head"><div class="card-title">Contract changes</div></div>
+                <div id="diff-contract"></div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ============================================================ -->
+        <section data-view-panel="compare" hidden>
+          <div class="page-head">
+            <div>
+              <div class="eyebrow">CI gate</div>
+              <h1>Regression gate</h1>
+              <p class="lede">A regression fails the build even when the pass rate improves. The gate is the point: a prompt change that breaks a previously-passing case is a regression, not an average.</p>
+            </div>
+            <span class="spacer"></span>
+            <select class="select" id="compare-suite" style="width:240px" aria-label="Suite"></select>
+          </div>
+
+          <div id="gate-banner" class="gate-banner"></div>
+
+          <div class="grid" style="grid-template-columns:minmax(0,1fr) minmax(0,1fr);margin-bottom:16px">
+            <div class="card">
+              <div class="card-head"><div class="card-title">Regressions</div><span class="spacer"></span><span class="badge red" id="regression-count">0</span></div>
+              <div id="regressions"></div>
+            </div>
+            <div class="card">
+              <div class="card-head"><div class="card-title">Fixes and remaining failures</div><span class="spacer"></span><span class="badge green" id="fix-count">0</span></div>
+              <div id="fixes"></div>
+            </div>
+          </div>
+
+          <div class="grid grid-2">
+            <div class="card">
+              <div class="card-head"><div class="card-title">Cost and latency</div><span class="spacer"></span><span class="small muted">recorded, per run</span></div>
+              <div id="cost-latency"></div>
+            </div>
+            <div class="card pad-sm" style="padding:0">
+              <div class="row" style="padding:12px 16px"><span class="card-title">CI output</span><span class="spacer"></span><span class="small muted mono">promptops compare</span></div>
+              <pre class="code" id="ci-output" style="border:0;border-top:1px solid var(--line);border-radius:0;max-height:280px"></pre>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <div class="demo-banner">
+    <span class="brand-mark" style="width:20px;height:20px;font-size:10px;border-radius:6px">A</span>
+    <span>Arvion Labs</span>
+    <span class="sep"></span>
+    <a href="https://arvion-technology.github.io/labs/">All projects</a>
+    <span class="sep"></span>
+    <a href="https://github.com/arvion-technology/promptops" target="_blank" rel="noopener">source</a>
+  </div>
+
+  <script src="arvion.js"></script>
+  <script type="module" src="app.js"></script>
+</body>
+</html>
