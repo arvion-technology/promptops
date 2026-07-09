@@ -1,0 +1,123 @@
+/* PromptOps demo — registry, matrix, diff and gate styles. */
+
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 16px;
+}
+
+.registry-grid {
+  display: grid;
+  grid-template-columns: 250px minmax(0, 1fr);
+  gap: 16px;
+  align-items: start;
+}
+
+#prompt-list { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+.prompt-item {
+  width: 100%;
+  text-align: left;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 10px;
+  background: transparent;
+  cursor: pointer;
+  color: var(--text-2);
+}
+.prompt-item:hover { background: rgba(255, 255, 255, 0.03); }
+.prompt-item.selected { background: var(--gold-soft); border-color: var(--gold-line); }
+.prompt-name { display: block; color: var(--text); font-size: 12.5px; font-weight: 600; }
+.prompt-meta { display: block; color: var(--muted); font-size: 10.5px; margin-top: 3px; font-family: var(--font-mono); }
+
+.controls { display: flex; align-items: flex-end; gap: 18px; padding: 14px 18px; margin-bottom: 16px; }
+.control { display: flex; flex-direction: column; gap: 6px; min-width: 170px; }
+.control.grow { flex: 1; }
+.control label { font-size: 10.5px; letter-spacing: 0.07em; text-transform: uppercase; color: var(--muted); }
+
+/* ---------- matrix -------------------------------------------------------- */
+.matrix-table td, .matrix-table th { font-variant-numeric: tabular-nums; }
+.case-name { color: var(--text); font-size: 12.5px; font-weight: 500; }
+.case-id { font: 10.5px var(--font-mono); color: var(--muted); }
+.cell-fail { display: block; font-size: 10.5px; color: var(--red); margin-top: 3px; max-width: 30ch; }
+.change { font: 600 10px var(--font-mono); letter-spacing: 0.02em; }
+.change.regressed { color: var(--red); }
+.change.fixed { color: var(--green); }
+.change.same { color: var(--muted); }
+
+.assertion-line { display: flex; align-items: baseline; gap: 8px; padding: 5px 0; font-size: 11.5px; color: var(--text-2); border-bottom: 1px solid var(--line); }
+.assertion-line:last-child { border-bottom: 0; }
+.assertion-line .type { font: 600 10px var(--font-mono); color: var(--gold); width: 82px; flex: none; }
+.assertion-line .msg { color: var(--text-2); }
+.assertion-line.failed .msg { color: var(--red); }
+
+/* ---------- diff ---------------------------------------------------------- */
+pre.diff {
+  background: #070a11;
+  border-radius: 0 0 var(--radius) var(--radius);
+  font: 12px/1.75 var(--font-mono);
+  color: #c7d2e5;
+  overflow: auto;
+  max-height: 540px;
+  margin: 0;
+  padding: 10px 0;
+}
+.diff-line { display: grid; grid-template-columns: 34px 34px 16px minmax(0, 1fr); gap: 6px; padding: 0 14px; white-space: pre-wrap; }
+.diff-line .num { color: #445066; text-align: right; user-select: none; }
+.diff-line .mark { color: var(--muted); }
+.diff-line.added { background: rgba(52, 211, 153, 0.08); }
+.diff-line.added .mark, .diff-line.added .text { color: #7fe0bd; }
+.diff-line.removed { background: rgba(248, 113, 113, 0.08); }
+.diff-line.removed .mark, .diff-line.removed .text { color: #f0a0a0; }
+.diff-line.context .text { color: var(--text-2); }
+
+.contract-row { display: flex; align-items: baseline; gap: 8px; font-size: 12px; padding: 6px 0; border-bottom: 1px solid var(--line); }
+.contract-row:last-child { border-bottom: 0; }
+.contract-row .k { width: 110px; color: var(--muted); font-size: 11px; }
+.contract-row .v { font-family: var(--font-mono); font-size: 11px; color: var(--text-2); }
+
+/* ---------- gate ---------------------------------------------------------- */
+.gate-banner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 18px 22px;
+  border-radius: 14px;
+  border: 1px solid var(--line-strong);
+  background: var(--surface);
+  margin-bottom: 16px;
+}
+.gate-banner.fail { border-color: rgba(248, 113, 113, 0.4); background: rgba(248, 113, 113, 0.07); }
+.gate-banner.pass { border-color: rgba(52, 211, 153, 0.4); background: rgba(52, 211, 153, 0.06); }
+.gate-icon { width: 38px; height: 38px; border-radius: 11px; display: grid; place-items: center; font: 700 16px var(--font-display); flex: none; }
+.gate-banner.fail .gate-icon { background: var(--red-soft); color: var(--red); border: 1px solid rgba(248, 113, 113, 0.35); }
+.gate-banner.pass .gate-icon { background: var(--green-soft); color: var(--green); border: 1px solid rgba(52, 211, 153, 0.35); }
+.gate-title { font: 600 18px var(--font-display); color: var(--text); }
+.gate-sub { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+.regression-item { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--line); }
+.regression-item:last-child { border-bottom: 0; }
+.regression-item .failures { font-size: 11px; color: var(--red); margin-top: 3px; line-height: 1.45; }
+.empty-gate { font-size: 12.5px; color: var(--muted); padding: 8px 0; }
+
+.cost-row { display: flex; align-items: center; gap: 10px; font-size: 12px; padding: 6px 0; }
+.cost-row .label { width: 150px; color: var(--text-2); }
+.cost-row .value { margin-left: auto; font-family: var(--font-mono); color: var(--text); }
+.cost-bar { height: 6px; border-radius: 99px; background: var(--surface-3); overflow: hidden; flex: 1; }
+.cost-bar > i { display: block; height: 100%; background: var(--gold); }
+.cost-bar.blue > i { background: var(--blue); }
+
+@media (max-width: 1080px) {
+  .stat-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .registry-grid { grid-template-columns: 1fr; }
+  .controls { flex-wrap: wrap; }
+}
+
+/* Placeholder chips in the template panel. */
+.chip {
+  font: 500 10.5px var(--font-mono);
+  color: var(--gold);
+  background: var(--gold-soft);
+  border: 1px solid var(--gold-line);
+  border-radius: 5px;
+  padding: 1px 7px;
+}
