@@ -1,0 +1,686 @@
+{
+  "project": "promptops-demo",
+  "prompts": [
+    {
+      "id": "ticket-classifier",
+      "name": "Ticket classifier",
+      "description": "Classify a support ticket into a category and urgency, with a one-sentence reason. Output is parsed by the support router.",
+      "labels": {
+        "prod": "2.0.0",
+        "previous": "1.1.0"
+      },
+      "versions": [
+        {
+          "version": "1.0.0",
+          "createdAt": "2026-03-02",
+          "model": "gpt-4o-mini",
+          "temperature": 0,
+          "changelog": "First version. JSON contract with category, urgency and reason.",
+          "variables": [
+            "ticket"
+          ],
+          "template": "You are a support triage assistant.\nClassify the ticket into exactly one category: billing, bug, account, howto.\nSet urgency to low, normal or high.\n\nRespond with a JSON object with the keys category, urgency and reason. No prose, no code fences.\n\nTicket:\n{{ticket}}"
+        },
+        {
+          "version": "1.1.0",
+          "createdAt": "2026-05-18",
+          "model": "gpt-4o-mini",
+          "temperature": 0,
+          "changelog": "Treat security reports as high urgency. Never invent an account id.",
+          "variables": [
+            "ticket"
+          ],
+          "template": "You are a support triage assistant.\nClassify the ticket into exactly one category: billing, bug, account, howto.\nSet urgency to low, normal or high. Any report of unauthorised access is high urgency.\nNever invent an account id.\n\nRespond with a JSON object with the keys category, urgency and reason. No prose, no code fences.\n\nTicket:\n{{ticket}}"
+        },
+        {
+          "version": "2.0.0",
+          "createdAt": "2026-06-27",
+          "model": "gpt-4o-mini",
+          "temperature": 0,
+          "changelog": "Shorter answers: one line, and omit fields the model is unsure about.",
+          "variables": [
+            "ticket"
+          ],
+          "template": "You are a support triage assistant.\nClassify the ticket into exactly one category: billing, bug, account, howto.\nSet urgency to low, normal or high. Any report of unauthorised access is high urgency.\nAnswer in one line. Omit any field you are not sure about.\n\nRespond with a JSON object with the keys category, urgency and reason. No prose, no code fences.\n\nTicket:\n{{ticket}}"
+        }
+      ]
+    },
+    {
+      "id": "refund-reply",
+      "name": "Refund reply",
+      "description": "Draft the first reply to a refund request. Tone rules come from a support policy document and are asserted in the suite.",
+      "labels": {
+        "prod": "1.1.0"
+      },
+      "versions": [
+        {
+          "version": "1.0.0",
+          "createdAt": "2026-02-11",
+          "model": "claude-3-5-haiku-latest",
+          "temperature": 0.3,
+          "changelog": "First version. Resolution first, then the timeline.",
+          "variables": [
+            "customer_name",
+            "message"
+          ],
+          "template": "You are a support agent for the billing team.\nWrite the first reply to this refund request.\nStart with the outcome, not with an apology. Mention the refund window when it applies.\nNever mention competitors. Do not use the word unfortunately.\nKeep the reply under 120 words.\n\nCustomer name: {{customer_name}}\nMessage:\n{{message}}"
+        },
+        {
+          "version": "1.1.0",
+          "createdAt": "2026-06-03",
+          "model": "claude-3-5-haiku-latest",
+          "temperature": 0.3,
+          "changelog": "Reword the opening rule after the tone review. Same contract.",
+          "variables": [
+            "customer_name",
+            "message"
+          ],
+          "template": "You are a support agent for the billing team.\nWrite the first reply to this refund request.\nLead with the outcome in the first sentence. State the refund timeline in business days.\nNever mention competitors. Do not use the word unfortunately.\nKeep the reply under 120 words.\n\nCustomer name: {{customer_name}}\nMessage:\n{{message}}"
+        }
+      ]
+    },
+    {
+      "id": "sql-helper",
+      "name": "SQL helper",
+      "description": "Turn an analytics question into a read-only SQL query against a known schema. Used by the internal query drawer.",
+      "labels": {
+        "prod": "0.2.0"
+      },
+      "versions": [
+        {
+          "version": "0.1.0",
+          "createdAt": "2026-01-19",
+          "model": "gpt-4o",
+          "temperature": 0,
+          "changelog": "First version. Explicit columns, tenant filter, read-only.",
+          "variables": [
+            "schema",
+            "question"
+          ],
+          "template": "You write read-only PostgreSQL for an analytics team.\nReturn exactly one SELECT statement. Use explicit column names, never SELECT *.\nAlways filter by tenant_id unless the question is explicitly cross-tenant.\nUse bind parameters ($1, $2) for values that come from the user.\nNever write INSERT, UPDATE, DELETE, DROP or ALTER.\n\nSchema:\n{{schema}}\n\nQuestion: {{question}}"
+        },
+        {
+          "version": "0.2.0",
+          "createdAt": "2026-06-14",
+          "model": "gpt-4o",
+          "temperature": 0,
+          "changelog": "Ask for concise queries and put the safety rules after the question.",
+          "variables": [
+            "schema",
+            "question"
+          ],
+          "template": "You write PostgreSQL for an analytics team.\nPrefer concise queries.\n\nSchema:\n{{schema}}\n\nQuestion: {{question}}\n\nRules: return exactly one SELECT statement. Use bind parameters ($1, $2) for values that come from the user. Never write INSERT, UPDATE, DELETE, DROP or ALTER."
+        }
+      ]
+    }
+  ],
+  "suites": [
+    {
+      "id": "ticket-suite",
+      "name": "Ticket classification contract",
+      "promptId": "ticket-classifier",
+      "cases": [
+        {
+          "id": "T-1",
+          "name": "Duplicate charge is billing",
+          "vars": {
+            "ticket": "I was charged twice for invoice INV-2291 this month."
+          },
+          "assertions": [
+            {
+              "type": "json",
+              "required": [
+                "category",
+                "urgency",
+                "reason"
+              ]
+            },
+            {
+              "type": "json_field",
+              "field": "category",
+              "equals": "billing"
+            },
+            {
+              "type": "json_field",
+              "field": "urgency",
+              "matches": "^(low|normal|high)$"
+            }
+          ]
+        },
+        {
+          "id": "T-2",
+          "name": "Dashboard crash is a bug",
+          "vars": {
+            "ticket": "The dashboard crashes with a 500 error when I open Settings."
+          },
+          "assertions": [
+            {
+              "type": "json",
+              "required": [
+                "category",
+                "urgency",
+                "reason"
+              ]
+            },
+            {
+              "type": "json_field",
+              "field": "category",
+              "equals": "bug"
+            }
+          ]
+        },
+        {
+          "id": "T-3",
+          "name": "Export question is howto",
+          "vars": {
+            "ticket": "How do I export my data as CSV?"
+          },
+          "assertions": [
+            {
+              "type": "json",
+              "required": [
+                "category",
+                "urgency",
+                "reason"
+              ]
+            },
+            {
+              "type": "json_field",
+              "field": "category",
+              "equals": "howto"
+            }
+          ]
+        },
+        {
+          "id": "T-4",
+          "name": "Deletion request is account",
+          "vars": {
+            "ticket": "Please delete my account and all my data."
+          },
+          "assertions": [
+            {
+              "type": "json",
+              "required": [
+                "category",
+                "urgency",
+                "reason"
+              ]
+            },
+            {
+              "type": "json_field",
+              "field": "category",
+              "equals": "account"
+            },
+            {
+              "type": "not_contains",
+              "value": "cannot"
+            }
+          ]
+        },
+        {
+          "id": "T-5",
+          "name": "Unauthorised access is high urgency",
+          "vars": {
+            "ticket": "Someone accessed my account from another country and changed my password."
+          },
+          "assertions": [
+            {
+              "type": "json",
+              "required": [
+                "category",
+                "urgency",
+                "reason"
+              ]
+            },
+            {
+              "type": "json_field",
+              "field": "category",
+              "equals": "account"
+            },
+            {
+              "type": "json_field",
+              "field": "urgency",
+              "equals": "high"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "refund-suite",
+      "name": "Refund reply tone and content",
+      "promptId": "refund-reply",
+      "cases": [
+        {
+          "id": "R-1",
+          "name": "Broken item, asks for a refund",
+          "vars": {
+            "customer_name": "Priya",
+            "message": "My order arrived broken. Can I get a refund?"
+          },
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "refund"
+            },
+            {
+              "type": "not_contains",
+              "value": "unfortunately"
+            },
+            {
+              "type": "custom",
+              "fn": "mentions_business_days"
+            },
+            {
+              "type": "custom",
+              "fn": "no_competitor_mention"
+            }
+          ]
+        },
+        {
+          "id": "R-2",
+          "name": "Annual plan refund",
+          "vars": {
+            "customer_name": "Marco",
+            "message": "I want my money back for the annual plan, I am moving abroad."
+          },
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "refund"
+            },
+            {
+              "type": "length_max",
+              "value": 120
+            },
+            {
+              "type": "not_contains",
+              "value": "unfortunately"
+            }
+          ]
+        },
+        {
+          "id": "R-3",
+          "name": "Double charge on a card",
+          "vars": {
+            "customer_name": "Aisha",
+            "message": "This is the second time you have charged me twice in one month."
+          },
+          "assertions": [
+            {
+              "type": "regex",
+              "value": "(refund|credit)",
+              "flags": "i"
+            },
+            {
+              "type": "custom",
+              "fn": "mentions_business_days"
+            }
+          ]
+        },
+        {
+          "id": "R-4",
+          "name": "Explains when the money arrives",
+          "vars": {
+            "customer_name": "Tom",
+            "message": "You approved my refund yesterday. How long until the money shows up?"
+          },
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "business days"
+            },
+            {
+              "type": "not_contains",
+              "value": "unfortunately"
+            }
+          ]
+        },
+        {
+          "id": "R-5",
+          "name": "Angry cancellation stays professional",
+          "vars": {
+            "customer_name": "Elena",
+            "message": "Cancel everything and refund me, your product is terrible."
+          },
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "refund"
+            },
+            {
+              "type": "not_contains",
+              "value": "terrible"
+            },
+            {
+              "type": "custom",
+              "fn": "no_competitor_mention"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "sql-suite",
+      "name": "Read-only SQL generation",
+      "promptId": "sql-helper",
+      "cases": [
+        {
+          "id": "S-1",
+          "name": "Top customers by revenue",
+          "vars": {
+            "question": "Top 10 customers by revenue last quarter",
+            "schema": "customers(id, name), orders(customer_id, amount, created_at)"
+          },
+          "assertions": [
+            {
+              "type": "custom",
+              "fn": "sql_select_only"
+            },
+            {
+              "type": "not_contains",
+              "value": "SELECT *"
+            },
+            {
+              "type": "contains",
+              "value": "LIMIT 10"
+            }
+          ]
+        },
+        {
+          "id": "S-2",
+          "name": "Tenant-scoped date filter",
+          "vars": {
+            "question": "Orders since 2026-01-01 for this tenant",
+            "schema": "orders(tenant_id, total, created_at)"
+          },
+          "assertions": [
+            {
+              "type": "custom",
+              "fn": "sql_select_only"
+            },
+            {
+              "type": "custom",
+              "fn": "has_parameter_placeholder"
+            },
+            {
+              "type": "contains",
+              "value": "WHERE"
+            }
+          ]
+        },
+        {
+          "id": "S-3",
+          "name": "Monthly active users",
+          "vars": {
+            "question": "Monthly active users for the last six months",
+            "schema": "events(tenant_id, user_id, created_at)"
+          },
+          "assertions": [
+            {
+              "type": "contains",
+              "value": "GROUP BY"
+            },
+            {
+              "type": "regex",
+              "value": "count\\s*\\(",
+              "flags": "i"
+            }
+          ]
+        },
+        {
+          "id": "S-4",
+          "name": "Destructive request is refused",
+          "vars": {
+            "question": "Delete every inactive user",
+            "schema": "users(tenant_id, id, last_seen)"
+          },
+          "assertions": [
+            {
+              "type": "not_contains",
+              "value": "DELETE"
+            },
+            {
+              "type": "contains",
+              "value": "SELECT"
+            }
+          ]
+        },
+        {
+          "id": "S-5",
+          "name": "Revenue by plan for one tenant",
+          "vars": {
+            "question": "Revenue by plan for tenant 42",
+            "schema": "invoices(tenant_id, plan, amount)"
+          },
+          "assertions": [
+            {
+              "type": "custom",
+              "fn": "sql_select_only"
+            },
+            {
+              "type": "contains",
+              "value": "GROUP BY"
+            },
+            {
+              "type": "contains",
+              "value": "tenant_id"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "runs": [
+    {
+      "id": "ticket-baseline",
+      "suiteId": "ticket-suite",
+      "promptId": "ticket-classifier",
+      "version": "1.1.0",
+      "role": "baseline",
+      "createdAt": "2026-06-07",
+      "cases": {
+        "T-1": {
+          "output": "{\"category\":\"billing\",\"urgency\":\"high\",\"reason\":\"Duplicate charge for INV-2291.\"}",
+          "latencyMs": 780,
+          "costUsd": 0.00042
+        },
+        "T-2": {
+          "output": "{\"category\":\"bug\",\"urgency\":\"high\",\"reason\":\"500 error on the settings page.\"}",
+          "latencyMs": 810,
+          "costUsd": 0.00041
+        },
+        "T-3": {
+          "output": "{\"category\":\"howto\",\"urgency\":\"low\",\"reason\":\"Export is available under data settings.\"}",
+          "latencyMs": 760,
+          "costUsd": 0.0004
+        },
+        "T-4": {
+          "output": "{\"category\":\"account\",\"urgency\":\"high\",\"reason\":\"Account deletion requested.\"}",
+          "latencyMs": 800,
+          "costUsd": 0.00042
+        },
+        "T-5": {
+          "output": "{\"category\":\"account\",\"urgency\":\"high\",\"reason\":\"Possible account takeover.\"}",
+          "latencyMs": 830,
+          "costUsd": 0.00043
+        }
+      }
+    },
+    {
+      "id": "ticket-candidate",
+      "suiteId": "ticket-suite",
+      "promptId": "ticket-classifier",
+      "version": "2.0.0",
+      "role": "candidate",
+      "createdAt": "2026-06-28",
+      "cases": {
+        "T-1": {
+          "output": "{\"category\":\"billing\",\"reason\":\"Duplicate charge for INV-2291.\"}",
+          "latencyMs": 640,
+          "costUsd": 0.00031
+        },
+        "T-2": {
+          "output": "{\"category\":\"bug\",\"urgency\":\"high\",\"reason\":\"Crash on the settings page.\"}",
+          "latencyMs": 655,
+          "costUsd": 0.00032
+        },
+        "T-3": {
+          "output": "Category: howto \u2014 the export option is in data settings.",
+          "latencyMs": 610,
+          "costUsd": 0.00028
+        },
+        "T-4": {
+          "output": "{\"category\":\"account\",\"urgency\":\"high\",\"reason\":\"Deletion request.\"}",
+          "latencyMs": 660,
+          "costUsd": 0.00033
+        },
+        "T-5": {
+          "output": "{\"category\":\"account\",\"urgency\":\"high\",\"reason\":\"Possible takeover.\"}",
+          "latencyMs": 670,
+          "costUsd": 0.00033
+        }
+      }
+    },
+    {
+      "id": "refund-baseline",
+      "suiteId": "refund-suite",
+      "promptId": "refund-reply",
+      "version": "1.0.0",
+      "role": "baseline",
+      "createdAt": "2026-05-21",
+      "cases": {
+        "R-1": {
+          "output": "Unfortunately, refunds are only possible within 30 days of delivery.",
+          "latencyMs": 1420,
+          "costUsd": 0.00086
+        },
+        "R-2": {
+          "output": "You can request a refund for the annual plan. Unused whole months are credited back to your card within ten business days.",
+          "latencyMs": 1510,
+          "costUsd": 0.00091
+        },
+        "R-3": {
+          "output": "We can refund the duplicate charge to your card; it usually appears within five to ten business days.",
+          "latencyMs": 1470,
+          "costUsd": 0.00088
+        },
+        "R-4": {
+          "output": "Refunds usually take five to ten business days to appear on your statement.",
+          "latencyMs": 1380,
+          "costUsd": 0.00084
+        },
+        "R-5": {
+          "output": "We can cancel the subscription and refund the last payment. We are sorry the product did not work for you.",
+          "latencyMs": 1450,
+          "costUsd": 0.00087
+        }
+      }
+    },
+    {
+      "id": "refund-candidate",
+      "suiteId": "refund-suite",
+      "promptId": "refund-reply",
+      "version": "1.1.0",
+      "role": "candidate",
+      "createdAt": "2026-06-05",
+      "cases": {
+        "R-1": {
+          "output": "Your refund is approved. The money will be back on your card in five to ten business days.",
+          "latencyMs": 1220,
+          "costUsd": 0.00072
+        },
+        "R-2": {
+          "output": "Your annual plan refund is approved. Unused months are credited back to your card within ten business days.",
+          "latencyMs": 1290,
+          "costUsd": 0.00075
+        },
+        "R-3": {
+          "output": "We have refunded the duplicate charge; it will post within three to five business days.",
+          "latencyMs": 1260,
+          "costUsd": 0.00074
+        },
+        "R-4": {
+          "output": "Refunds take five to ten business days to appear on your statement.",
+          "latencyMs": 1180,
+          "costUsd": 0.0007
+        },
+        "R-5": {
+          "output": "We have cancelled the subscription and refunded the last payment. The refund lands in three to five business days.",
+          "latencyMs": 1240,
+          "costUsd": 0.00073
+        }
+      }
+    },
+    {
+      "id": "sql-baseline",
+      "suiteId": "sql-suite",
+      "promptId": "sql-helper",
+      "version": "0.1.0",
+      "role": "baseline",
+      "createdAt": "2026-05-30",
+      "cases": {
+        "S-1": {
+          "output": "SELECT c.id, c.name, SUM(o.amount) AS revenue FROM customers c JOIN orders o ON o.customer_id = c.id WHERE o.created_at >= date_trunc('quarter', now()) - interval '3 months' GROUP BY c.id, c.name ORDER BY revenue DESC LIMIT 10;",
+          "latencyMs": 940,
+          "costUsd": 0.00112
+        },
+        "S-2": {
+          "output": "SELECT * FROM orders WHERE tenant_id = 42 AND created_at >= '2026-01-01';",
+          "latencyMs": 910,
+          "costUsd": 0.00108
+        },
+        "S-3": {
+          "output": "SELECT date_trunc('month', created_at) AS month, count(DISTINCT user_id) AS active_users FROM events GROUP BY 1 ORDER BY 1;",
+          "latencyMs": 960,
+          "costUsd": 0.00115
+        },
+        "S-4": {
+          "output": "I cannot run destructive statements. To review the accounts, run: SELECT id, last_seen FROM users WHERE last_seen < now() - interval '90 days';",
+          "latencyMs": 890,
+          "costUsd": 0.00104
+        },
+        "S-5": {
+          "output": "SELECT plan, SUM(amount) AS revenue FROM invoices WHERE tenant_id = $1 GROUP BY plan;",
+          "latencyMs": 900,
+          "costUsd": 0.00106
+        }
+      }
+    },
+    {
+      "id": "sql-candidate",
+      "suiteId": "sql-suite",
+      "promptId": "sql-helper",
+      "version": "0.2.0",
+      "role": "candidate",
+      "createdAt": "2026-06-16",
+      "cases": {
+        "S-1": {
+          "output": "SELECT * FROM customers ORDER BY revenue DESC LIMIT 10;",
+          "latencyMs": 760,
+          "costUsd": 0.00086
+        },
+        "S-2": {
+          "output": "SELECT id, total, created_at FROM orders WHERE tenant_id = $1 AND created_at >= '2026-01-01';",
+          "latencyMs": 780,
+          "costUsd": 0.00088
+        },
+        "S-3": {
+          "output": "SELECT date_trunc('month', created_at) AS month, count(DISTINCT user_id) FROM events GROUP BY 1 ORDER BY 1;",
+          "latencyMs": 800,
+          "costUsd": 0.0009
+        },
+        "S-4": {
+          "output": "That is a destructive request, so no. To review them: SELECT id, last_seen FROM users WHERE last_seen < now() - interval '90 days';",
+          "latencyMs": 770,
+          "costUsd": 0.00085
+        },
+        "S-5": {
+          "output": "SELECT plan, SUM(amount) FROM invoices WHERE tenant_id = $1 GROUP BY plan;",
+          "latencyMs": 750,
+          "costUsd": 0.00084
+        }
+      }
+    }
+  ]
+}
