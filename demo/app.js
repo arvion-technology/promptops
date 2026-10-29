@@ -1,4 +1,4 @@
-// PromptOps demo — evaluations are computed here from the recorded outputs.
+// PromptOps demo, evaluations are computed here from the recorded outputs.
 // Nothing in this file hard-codes a pass rate: assertions run in the browser
 // through the same engine the CLI uses.
 import { CUSTOM_HANDLERS } from "../src/custom.js";
@@ -287,7 +287,7 @@ function renderCompare() {
   banner.replaceChildren(
     el("div", { class: "gate-icon", text: comparison.gate === "fail" ? "✕" : "✓" }),
     el("div", { style: "flex:1" },
-      el("div", { class: "gate-title", text: comparison.gate === "fail" ? `Gate failed — ${comparison.regressionCount} regression${comparison.regressionCount === 1 ? "" : "s"}` : "Gate passed" }),
+      el("div", { class: "gate-title", text: comparison.gate === "fail" ? `Gate failed, ${comparison.regressionCount} regression${comparison.regressionCount === 1 ? "" : "s"}` : "Gate passed" }),
       el("div", { class: "gate-sub", text: `${suite.name} · ${pair.baseline.version} → ${pair.candidate.version} · pass rate ${comparison.passRateDelta >= 0 ? "+" : ""}${(comparison.passRateDelta * 100).toFixed(0)} pp · ${comparison.fixCount} fix${comparison.fixCount === 1 ? "" : "es"} · cost ${comparison.costDeltaUsd >= 0 ? "+" : ""}${money(comparison.costDeltaUsd)}` }),
     ),
     el("span", { class: `badge ${comparison.gate === "fail" ? "red" : "green"}`, text: comparison.gate.toUpperCase() }),

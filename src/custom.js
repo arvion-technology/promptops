@@ -9,10 +9,10 @@ export const CUSTOM_HANDLERS = {
     // Support replies mix digits and words ("3-5 days", "five to ten days"), so
     // the check accepts both rather than forcing an unnatural writing style.
     const number = "(?:\\d+|one|two|three|four|five|six|seven|eight|nine|ten|twelve)";
-    const match = text.match(new RegExp(`\\b(${number})\\s*(?:-|–|to)\\s*(${number})\\s+business days\\b`, "i"));
+    const match = text.match(new RegExp(`\\b(${number})\\s*(?:-|, |to)\\s*(${number})\\s+business days\\b`, "i"));
     return {
       passed: Boolean(match),
-      message: match ? `states ${match[1]}–${match[2]} business days` : "does not state a business-day window",
+      message: match ? `states ${match[1]}, ${match[2]} business days` : "does not state a business-day window",
     };
   },
 

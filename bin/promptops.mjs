@@ -1,5 +1,5 @@
 #!/usr/bin/env node
-// promptops — evaluate recorded prompt runs, compare versions and fail CI on a
+// promptops, evaluate recorded prompt runs, compare versions and fail CI on a
 // regression. No API key: a "run" is a committed set of model outputs, so the
 // assertions and the diff are real while the model stays out of CI.
 //

@@ -3,7 +3,7 @@
 // The failure this prevents is mundane and expensive: a prompt is edited, a
 // placeholder is renamed, and production starts sending the literal text
 // "{{company}}" to the model because nothing validates the render. Rendering
-// here is strict by default — a missing variable or an unused variable throws
+// here is strict by default, a missing variable or an unused variable throws
 // with both lists, so a bad edit fails at build time instead of at request time.
 
 const VARIABLE_RE = /\{\{\s*([a-zA-Z_][a-zA-Z0-9_.]*)\s*\}\}/g;

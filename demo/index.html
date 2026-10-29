@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <meta name="color-scheme" content="dark" />
-  <title>PromptOps — version, test and compare prompts like code</title>
+  <title>PromptOps | version, test and compare prompts like code</title>
   <meta name="description" content="Prompt registry with version history, assertion suites, pass/fail matrices, prompt diffs and a regression gate. Recorded runs, no API key required." />
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><path d='M50 9 L91 91 H73 L50 52 L27 91 H9 Z' fill='%23f5c26b'/><circle cx='50' cy='31' r='6.6' fill='%230b0f1a'/><path d='M50 52 L67 90 H33 Z' fill='%230b0f1a'/></svg>" />
   <link rel="stylesheet" href="arvion.css" />
@@ -72,7 +72,7 @@
               <div class="card-head" style="padding:6px 4px 0">
                 <div class="card-title">Prompts</div>
                 <span class="spacer"></span>
-                <span class="small muted" id="prompt-count">–</span>
+                <span class="small muted" id="prompt-count">, </span>
               </div>
               <div id="prompt-list"></div>
             </div>
@@ -81,11 +81,11 @@
               <div class="card">
                 <div class="card-head">
                   <div>
-                    <div class="card-title" id="prompt-title">–</div>
-                    <div class="card-sub" id="prompt-desc">–</div>
+                    <div class="card-title" id="prompt-title">, </div>
+                    <div class="card-sub" id="prompt-desc">, </div>
                   </div>
                   <span class="spacer"></span>
-                  <span class="badge gold" id="prod-badge">–</span>
+                  <span class="badge gold" id="prod-badge">, </span>
                 </div>
                 <div id="version-table"></div>
               </div>
@@ -94,7 +94,7 @@
                 <div class="card-head">
                   <div>
                     <div class="card-title">Template</div>
-                    <div class="card-sub" id="template-meta">–</div>
+                    <div class="card-sub" id="template-meta">, </div>
                   </div>
                   <span class="spacer"></span>
                   <div class="row" style="gap:6px" id="version-tabs"></div>
@@ -127,7 +127,7 @@
             <div class="card-head" style="padding:14px 16px 0">
               <div>
                 <div class="card-title">Pass/fail matrix</div>
-                <div class="card-sub" id="matrix-sub">–</div>
+                <div class="card-sub" id="matrix-sub">, </div>
               </div>
               <span class="spacer"></span>
               <span class="badge" id="matrix-legend">click a row for assertion detail</span>
@@ -171,14 +171,14 @@
               <select class="select" id="diff-to"></select>
             </div>
             <div class="control grow" style="align-items:flex-end">
-              <div class="row small muted" id="diff-meta">–</div>
+              <div class="row small muted" id="diff-meta">, </div>
             </div>
           </div>
 
           <div class="grid" style="grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)">
             <div class="card pad-sm" style="padding:0">
               <div class="row" style="padding:12px 16px">
-                <span class="card-title" id="diff-title">–</span>
+                <span class="card-title" id="diff-title">, </span>
                 <span class="spacer"></span>
                 <span class="badge green" id="added-badge">+0</span>
                 <span class="badge red" id="removed-badge">−0</span>

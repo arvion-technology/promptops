@@ -1,8 +1,8 @@
 <div align="center">
-<img src="docs/demo.gif" alt="PromptOps — suite results pass/fail matrix" width="100%" />
+<img src="docs/demo.gif" alt="PromptOps, suite results pass/fail matrix" width="100%" />
 </div>
 
-<sub>Recorded from the live demo — <a href="docs/demo.mp4">MP4</a> · <a href="docs/screenshot.png">static frame</a></sub>
+<sub>Recorded from the live demo, <a href="docs/demo.mp4">MP4</a> · <a href="docs/screenshot.png">static frame</a></sub>
 
 # PromptOps
 
@@ -19,7 +19,7 @@ the regression gate are evaluated locally, so a CI job needs no API key.
 Prompt changes are usually shipped on vibes: someone edits an instruction,
 tries two examples in a playground, and merges. The failure mode is not a crash,
 it is a case that worked last week and quietly does not any more. PromptOps makes
-that change reviewable — a line diff, a version changelog, a pass/fail matrix per
+that change reviewable, a line diff, a version changelog, a pass/fail matrix per
 case, and a gate that distinguishes "pass rate is the same" from "one case broke
 while another was fixed".
 
@@ -70,7 +70,7 @@ something to catch rather than a page of green.
 
 The dashboard imports the same `evaluateSuite` and `compareEvaluations` the CLI
 calls. A pass badge on screen is an assertion result computed in the browser
-from the recorded output — not a value from the JSON.
+from the recorded output, not a value from the JSON.
 
 ## Quickstart
 
@@ -182,20 +182,20 @@ npm test
 
 56 tests on `node:test`:
 
-- `template.test.js` — variable extraction, nested paths, strict failures,
+- `template.test.js`: variable extraction, nested paths, strict failures,
   non-strict mode, validation of unbalanced braces.
-- `assertions.test.js` — every assertion type, fenced/prose JSON extraction,
+- `assertions.test.js`: every assertion type, fenced/prose JSON extraction,
   invalid patterns, custom handlers, aggregation.
-- `diff.test.js` — additions, removals, replacements, metadata and unknown
+- `diff.test.js`: additions, removals, replacements, metadata and unknown
   versions.
-- `runner.test.js` — per-case evaluation, cost/latency sums, regressions, fixes,
+- `runner.test.js`: per-case evaluation, cost/latency sums, regressions, fixes,
   the one-regression-one-fix gate case, missing outputs.
-- `registry.test.js` — label and version resolution, baseline/candidate pairing,
+- `registry.test.js`: label and version resolution, baseline/candidate pairing,
   summaries and counts.
-- `data.test.js` — the committed registry is internally consistent: templates
+- `data.test.js`: the committed registry is internally consistent: templates
   declare the variables they use, assertions are supported, every run covers
   every case, and the demo's regression stories are the ones the data produces.
-- `cli.test.js` — list, compare exit codes, run, diff, strict render failure.
+- `cli.test.js`: list, compare exit codes, run, diff, strict render failure.
 
 ## Limitations
 

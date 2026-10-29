@@ -56,7 +56,7 @@ export function formatPromptList(registry, summaries) {
   const lines = ["prompt".padEnd(22) + "prod".padEnd(9) + "versions".padEnd(10) + "suites"];
   for (const summary of summaries) {
     lines.push(
-      summary.id.padEnd(22) + summary.prod.padEnd(9) + String(summary.versions).padEnd(10) + (summary.suites.join(", ") || "—"),
+      summary.id.padEnd(22) + summary.prod.padEnd(9) + String(summary.versions).padEnd(10) + (summary.suites.join(", ") || ", "),
     );
   }
   return lines.join("\n");

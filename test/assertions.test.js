@@ -29,7 +29,7 @@ test("regex assertions report invalid patterns instead of throwing", () => {
 
 test("extractJson accepts fenced JSON and JSON surrounded by prose", () => {
   assert.deepEqual(extractJson('```json\n{"a":1}\n```'), { a: 1 });
-  assert.deepEqual(extractJson('Here you go: {"a":2} — done.'), { a: 2 });
+  assert.deepEqual(extractJson('Here you go: {"a":2}, done.'), { a: 2 });
   assert.deepEqual(extractJson("[1,2]"), [1, 2]);
   assert.throws(() => extractJson("not json"), /not valid JSON/);
 });
